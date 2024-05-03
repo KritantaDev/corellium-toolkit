@@ -21,7 +21,7 @@ uname -v | grep xnu > /dev/null 2>&1 && python3 -c "exit('${USER}'=='mobile')"||
 # echo "First time this script has been ran on this machine; dependencies will be installed automatically";
 command -v brew > /dev/null 2>&1 || echo "install homebrew from brew.sh"
 command -v ipsw > /dev/null 2>&1 || brew install blacktop/tap/ipsw
-command -v ideviceinfo > /dev/null 2>&1 || brew install ideviceinfo
+command -v ideviceinfo > /dev/null 2>&1 || brew install libimobiledevice
 command -v gsed > /dev/null 2>&1 || brew install gsed
 
 # send complaints to @arm64e on twitter.
@@ -80,7 +80,9 @@ mkdir "$TDIR/Symbols"
 echo "Creating info dictionary"
 stat "$TDIR/Info.plist" > /dev/null 2>&1 || curl -s https://gist.githubusercontent.com/cxnder/5dbe177c255c3578370afa42e15e8e64/raw/9c02aff7ea216cff3d1f7da09bcb5a05752e77c6/cacheplaceholder > "$TDIR/Info.plist"
 echo "Performing actual extraction with dsc_extract"
-ipsw dyld split $(find . -name 'dyld_sh*' -type f) "$TDIR/Symbols" || python3 -c "print('Failed to extract from cache. '); exit(1)"
+for x in $(find . -name 'dyld_sh*' -type f); do
+    ipsw dyld split "$x" -o "$TDIR/Symbols" || python3 -c "print('Failed to extract from cache. '); exit(1)"
+done
 echo "Removing Downloaded Files"
 cd .. && rm -r ipsw
 echo "Restart Xcode and your device shouldn't require copying files from the cache. Happy hacking!"
